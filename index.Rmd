@@ -58,7 +58,7 @@ colnames(df_aggre1) <- c("provname", "Health Professional Present at Birth", "He
 ```
 
 Create Plot
-```{r}
+```{r fig.width=15, fig.height=10,echo=TRUE}
 base = ggRadar(df_aggre1,aes(group='provname'),legend.position="none") 
 
 radar1 = base + facet_wrap(~provname,nrow =2) +
