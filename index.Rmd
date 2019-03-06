@@ -1,0 +1,76 @@
+## Course: Visual Analytics for Policy and Management
+###Multivariate Homework 
+####Group 3: Dave Coomes, Quinhas Fernndes, Isabella Sun, Long Zong
+
+
+##
+##
+```{r echo=T, include=F}
+library(uwIntroStats)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(ggiraph)
+library(ggiraphExtra)
+library(foreign)
+library(haven)
+library(dotwhisker)
+library(broom)
+library(dplyr)
+library(openxlsx)
+
+knitr::opts_chunk$set(include = T)
+
+link="https://github.com/ihsun-uw/Group3_Final_Project/raw/master/child_mortality.dta"
+
+df <- read_dta(url(link))
+```
+
+Create a dataframe with the relevant variabels to plot in our radar plot
+```{r}
+# copy data
+df1=df
+
+df_aggre1 <- aggregate(cbind(birthatend, hwdensity, midwifedensity, mddensity)~provname, data=df1, FUN=mean )
+
+df_aggre1 <- df_aggre1[-c(5), ]
+
+# get minimun value by row
+df_aggre1$min=apply(df_aggre1[,c(2:5)],1,min)
+
+# turn this min values into a ranking
+df_aggre1$min=rank(df_aggre1$min,ties.method ='first' )
+
+# order city by ranking
+prov_fact=as.factor(df_aggre1[order(df_aggre1$min),]$provname)
+
+# turn city into ordered factor
+df_aggre1$provname=factor(df_aggre1$provname,
+                   levels= prov_fact,
+                   labels = prov_fact,
+                   ordered = T)
+
+# delete column with ranks
+df_aggre1$min=NULL
+
+colnames(df_aggre1) <- c("provname", "Health Professional Present at Birth", "Health Worker Density", "Midwife Density", "Medical Doctor Density")
+
+```
+
+Create Plot
+```{r}
+base = ggRadar(df_aggre1,aes(group='provname'),legend.position="none") 
+
+radar1 = base + facet_wrap(~provname,nrow =2) +
+    labs(title = "Radar plot: Province main study variables",
+                    caption = "Fig.1: Describes how provinces are performing on study variables : Health professional present at birth, health worker density, midwife density, and medical doctor density. 
+
+Source:Health Information System") +
+              theme(panel.background = element_rect(fill = "gray90"),
+                    plot.caption = element_text(hjust = 0, size = 10), 
+                    plot.title = element_text(hjust = 0.5, size=14)) 
+
+radar1 
+```
+
+
